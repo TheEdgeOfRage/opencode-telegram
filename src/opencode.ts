@@ -57,7 +57,8 @@ export async function getOrCreateSession(
   }
 
   const result = await client.session.create();
-  if (result.error) throw new Error(`failed to create session: ${result.error}`);
+  if (result.error)
+    throw new Error(`failed to create session: ${result.error}`);
 
   const sessionId = result.data.id;
   chatSessions.set(chatId, sessionId);
@@ -67,7 +68,8 @@ export async function getOrCreateSession(
 
 export async function listAgents(): Promise<string[]> {
   const result = await client.app.agents();
-  if (result.error) throw new Error(`list agents failed: ${JSON.stringify(result.error)}`);
+  if (result.error)
+    throw new Error(`list agents failed: ${JSON.stringify(result.error)}`);
   if (!result.data) return [];
   return result.data.map((a) => a.name);
 }
@@ -89,14 +91,16 @@ export async function sendPrompt(
     path: { id: sessionId },
     body: { parts: [{ type: "text", text }], ...(agent ? { agent } : {}) },
   });
-  if (result.error) throw new Error(`prompt failed: ${JSON.stringify(result.error)}`);
+  if (result.error)
+    throw new Error(`prompt failed: ${JSON.stringify(result.error)}`);
 
   return result.data.parts;
 }
 
 export async function createNewSession(chatId: number): Promise<string> {
   const result = await client.session.create();
-  if (result.error) throw new Error(`failed to create session: ${result.error}`);
+  if (result.error)
+    throw new Error(`failed to create session: ${result.error}`);
 
   const sessionId = result.data.id;
   chatSessions.set(chatId, sessionId);
@@ -127,28 +131,12 @@ export function switchSession(chatId: number, sessionId: string): void {
   saveSessions();
 }
 
-export async function getSessionMessages(
-  sessionId: string,
-  limit = 10,
-): Promise<Array<{ role: string; parts: Part[] }>> {
-  const result = await client.session.messages({
-    path: { id: sessionId },
-    query: { limit },
-  });
-  if (result.error) throw new Error(`list messages failed: ${JSON.stringify(result.error)}`);
-  if (!result.data) return [];
-
-  return result.data.map((m) => ({
-    role: m.info.role,
-    parts: m.parts,
-  }));
-}
-
 export async function abortSession(sessionId: string): Promise<void> {
   const result = await client.session.abort({
     path: { id: sessionId },
   });
-  if (result.error) throw new Error(`abort failed: ${JSON.stringify(result.error)}`);
+  if (result.error)
+    throw new Error(`abort failed: ${JSON.stringify(result.error)}`);
 }
 
 export async function replyPermission(
@@ -160,5 +148,6 @@ export async function replyPermission(
     path: { id: sessionId, permissionID: permissionId },
     body: { response },
   });
-  if (result.error) throw new Error(`permission reply failed: ${JSON.stringify(result.error)}`);
+  if (result.error)
+    throw new Error(`permission reply failed: ${JSON.stringify(result.error)}`);
 }

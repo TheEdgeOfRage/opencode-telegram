@@ -3,14 +3,18 @@ import type { Chat } from "grammy/types";
 import type { Part } from "@opencode-ai/sdk";
 import * as log from "./log.js";
 import type { PermissionEvent } from "./events.js";
-import { escapeMarkdownV2, formatParts, formatTextParts, splitMessage } from "./format.js";
+import {
+  escapeMarkdownV2,
+  formatParts,
+  formatTextParts,
+  splitMessage,
+} from "./format.js";
 import {
   getOrCreateSession,
   createNewSession,
   listSessions,
   getSessionId,
   switchSession,
-  getSessionMessages,
   abortSession,
   sendPrompt,
   replyPermission,
@@ -46,7 +50,10 @@ let channelChatId: number | null = null;
 // Telegram callback data is limited to 64 bytes. Permission IDs are too long,
 // so we store them in a map keyed by a short incrementing counter.
 let permCounter = 0;
-const pendingPerms = new Map<string, { sessionId: string; permissionId: string }>();
+const pendingPerms = new Map<
+  string,
+  { sessionId: string; permissionId: string }
+>();
 
 function formatPartsPreview(parts: Part[]): string {
   const text = formatParts(parts);
@@ -108,9 +115,12 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
     try {
       const sessionId = await createNewSession(chatId);
       log.info(`[session] created session=${sessionId} chat=${chatId}`);
-      await ctx.reply(`New session created: \`${escapeMarkdownV2(sessionId)}\``, {
-        parse_mode: "MarkdownV2",
-      });
+      await ctx.reply(
+        `New session created: \`${escapeMarkdownV2(sessionId)}\``,
+        {
+          parse_mode: "MarkdownV2",
+        },
+      );
     } catch (err) {
       log.error(`[cmd] /new error:`, err);
       await ctx.reply(`Failed to create session: ${String(err)}`);
@@ -143,7 +153,8 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
 
       await ctx.reply(lines.join("\n"), {
         parse_mode: "MarkdownV2",
-        reply_markup: keyboard.inline_keyboard.length > 0 ? keyboard : undefined,
+        reply_markup:
+          keyboard.inline_keyboard.length > 0 ? keyboard : undefined,
       });
     } catch (err) {
       log.error(`[cmd] /sessions error:`, err);
@@ -199,11 +210,17 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
       return;
     }
     pendingPerms.delete(key!);
-    const responseMap: Record<string, "once" | "always" | "reject"> = { a: "once", s: "always", d: "reject" };
+    const responseMap: Record<string, "once" | "always" | "reject"> = {
+      a: "once",
+      s: "always",
+      d: "reject",
+    };
     const permResponse = responseMap[action] ?? "reject";
     try {
       await replyPermission(perm.sessionId, perm.permissionId, permResponse);
-      log.info(`[permission] ${permResponse} session=${perm.sessionId} perm=${perm.permissionId}`);
+      log.info(
+        `[permission] ${permResponse} session=${perm.sessionId} perm=${perm.permissionId}`,
+      );
       await ctx.answerCallbackQuery({ text: `Permission: ${permResponse}` });
       await ctx.deleteMessage();
     } catch (err) {
@@ -247,7 +264,9 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
       }
       setAgent(chatId, match);
       log.info(`[agent] set agent=${match} chat=${chatId}`);
-      await ctx.reply(`Agent set to \`${escapeMarkdownV2(match)}\`\\.`, { parse_mode: "MarkdownV2" });
+      await ctx.reply(`Agent set to \`${escapeMarkdownV2(match)}\`\\.`, {
+        parse_mode: "MarkdownV2",
+      });
     } catch (err) {
       log.error(`[cmd] /agent error:`, err);
       await ctx.reply(`Error: ${String(err)}`);
@@ -261,17 +280,24 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
     try {
       const { sessionId, fallback } = await getOrCreateSession(chatId);
       if (fallback) {
-        log.info(`[session] previous session gone, created new session=${sessionId} chat=${chatId}`);
+        log.info(
+          `[session] previous session gone, created new session=${sessionId} chat=${chatId}`,
+        );
         await ctx.reply(
-          escapeMarkdownV2("Previous session no longer available. Started a new session."),
+          escapeMarkdownV2(
+            "Previous session no longer available. Started a new session.",
+          ),
           { parse_mode: "MarkdownV2" },
         );
       }
 
       // Typing indicator, refreshed every 4s
-      let typingInterval: ReturnType<typeof setInterval> | null = setInterval(() => {
-        void ctx.api.sendChatAction(chatId, "typing");
-      }, 4000);
+      let typingInterval: ReturnType<typeof setInterval> | null = setInterval(
+        () => {
+          void ctx.api.sendChatAction(chatId, "typing");
+        },
+        4000,
+      );
       void ctx.api.sendChatAction(chatId, "typing");
 
       // Send "thinking..." immediately, then edit-in-place as streaming arrives
@@ -286,14 +312,23 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
       const responseMsgId = thinkingMsg.message_id;
 
       const cleanup = () => {
-        if (editTimer) { clearTimeout(editTimer); editTimer = null; }
-        if (typingInterval) { clearInterval(typingInterval); typingInterval = null; }
+        if (editTimer) {
+          clearTimeout(editTimer);
+          editTimer = null;
+        }
+        if (typingInterval) {
+          clearInterval(typingInterval);
+          typingInterval = null;
+        }
         unregisterSession(sessionId);
       };
 
       const flushEdit = () => {
         if (latestPreview) {
-          const textToSend = channelChatId !== null ? formatAsQuote(latestPreview) : latestPreview;
+          const textToSend =
+            channelChatId !== null
+              ? formatAsQuote(latestPreview)
+              : latestPreview;
           void editMessage(ctx, responseMsgId, textToSend);
           lastEditTime = Date.now();
         }
@@ -316,9 +351,14 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
         },
         // onPermission
         async (perm: PermissionEvent) => {
-          log.info(`[permission] request permission=${perm.permission} session=${perm.sessionID} perm=${perm.id}`);
+          log.info(
+            `[permission] request permission=${perm.permission} session=${perm.sessionID} perm=${perm.id}`,
+          );
           const key = String(++permCounter);
-          pendingPerms.set(key, { sessionId: perm.sessionID, permissionId: perm.id });
+          pendingPerms.set(key, {
+            sessionId: perm.sessionID,
+            permissionId: perm.id,
+          });
           const keyboard = new InlineKeyboard()
             .text("Allow", `p:a:${key}`)
             .text("Session", `p:s:${key}`)
@@ -333,7 +373,9 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
       // Fire prompt without blocking grammY's update loop (permissions need callback handling)
       const userText = ctx.message.text;
       const activeAgent = getAgent(chatId);
-      log.info(`[prompt] sending to session=${sessionId} agent=${activeAgent ?? "(default)"}`);
+      log.info(
+        `[prompt] sending to session=${sessionId} agent=${activeAgent ?? "(default)"}`,
+      );
       sendPrompt(sessionId, userText, activeAgent)
         .then(async (parts) => {
           cleanup();
@@ -341,10 +383,15 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
           const textContent = formatTextParts(parts);
           if (textContent) {
             const chunks = splitMessage(textContent);
-            log.info(`[prompt] done session=${sessionId} chunks=${chunks.length}`);
+            log.info(
+              `[prompt] done session=${sessionId} chunks=${chunks.length}`,
+            );
             for (const chunk of chunks) {
-              const textToSend = channelChatId !== null ? formatAsQuote(chunk) : chunk;
-              await ctx.api.sendMessage(chatId, textToSend, { parse_mode: "MarkdownV2" });
+              const textToSend =
+                channelChatId !== null ? formatAsQuote(chunk) : chunk;
+              await ctx.api.sendMessage(chatId, textToSend, {
+                parse_mode: "MarkdownV2",
+              });
             }
           }
         })
@@ -352,7 +399,8 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
           cleanup();
           log.error(`[prompt] error session=${sessionId}:`, err);
           const errText = escapeMarkdownV2(`Error: ${String(err)}`);
-          const errTextToSend = channelChatId !== null ? formatAsQuote(errText) : errText;
+          const errTextToSend =
+            channelChatId !== null ? formatAsQuote(errText) : errText;
           await editMessage(ctx, responseMsgId, errTextToSend);
         });
     } catch (err) {
