@@ -35,16 +35,24 @@ function loadConfig(): Config {
 }
 
 export const OpenCodeTelegram: Plugin = async ({ client, directory }) => {
-  const { token, allowedUsers } = loadConfig();
-
   init(client, directory);
+
+  let config: Config | null = null;
+  let configError: string | null = null;
+  try {
+    config = loadConfig();
+  } catch (err) {
+    configError = String(err instanceof Error ? err.message : err);
+    log.error("config load failed:", configError);
+  }
 
   let bot: Bot | null = null;
   const autoConnect = process.env.TELEGRAM_AUTOCONNECT === "1";
 
   async function connect(): Promise<string> {
+    if (!config) return `error: ${configError}`;
     if (bot) return "already connected";
-    bot = createBot(token!, allowedUsers);
+    bot = createBot(config.token, config.allowedUsers);
     await bot.api.setMyCommands(BOT_COMMANDS);
     log.info("telegram bot starting long-polling...");
     bot.start();
