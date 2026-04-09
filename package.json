@@ -1,11 +1,17 @@
 {
-  "name": "opencode-telegram",
+  "name": "@theedgeofrage/opencode-telegram",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@opencode-ai/plugin": "^1.3.0",
