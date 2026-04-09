@@ -24,7 +24,6 @@ export const BOT_COMMANDS = [
   { command: "new", description: "New session" },
   { command: "sessions", description: "List and switch sessions" },
   { command: "abort", description: "Abort current session" },
-  { command: "history", description: "Recent messages from current session" },
   { command: "agent", description: "Switch agent (/agent <name>)" },
 ];
 
@@ -166,44 +165,6 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
     } catch (err) {
       log.error(`[cmd] /abort error:`, err);
       await ctx.reply(`Failed to abort: ${String(err)}`);
-    }
-  });
-
-  bot.command("history", async (ctx) => {
-    log.info(`[cmd] /history chat=${ctx.chat.id}`);
-    const sessionId = getSessionId(ctx.chat.id);
-    if (!sessionId) {
-      await ctx.reply("No active session\\. Use /new to create one\\.", {
-        parse_mode: "MarkdownV2",
-      });
-      return;
-    }
-    try {
-      const messages = await getSessionMessages(sessionId);
-      if (messages.length === 0) {
-        await ctx.reply("No messages in this session\\.", {
-          parse_mode: "MarkdownV2",
-        });
-        return;
-      }
-
-      const lines: string[] = [];
-      for (const msg of messages) {
-        const role = msg.role === "user" ? "You" : "Assistant";
-        const text = formatParts(msg.parts);
-        const preview = text
-          ? text.slice(0, 200) + (text.length > 200 ? escapeMarkdownV2("...") : "")
-          : escapeMarkdownV2("(no text)");
-        lines.push(`*${escapeMarkdownV2(role)}:* ${preview}`);
-      }
-
-      const chunks = splitMessage(lines.join("\n\n"));
-      for (const chunk of chunks) {
-        await ctx.reply(chunk, { parse_mode: "MarkdownV2" });
-      }
-    } catch (err) {
-      log.error(`[cmd] /history error:`, err);
-      await ctx.reply(`Failed to fetch history: ${String(err)}`);
     }
   });
 
