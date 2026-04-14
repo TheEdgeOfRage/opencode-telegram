@@ -29,7 +29,9 @@ function loadConfig(): Config {
   }
   const users = json.allowedUsers;
   if (!Array.isArray(users) || users.length === 0) {
-    throw new Error(`"allowedUsers" must be a non-empty array in ${configPath}`);
+    throw new Error(
+      `"allowedUsers" must be a non-empty array in ${configPath}`,
+    );
   }
   return { token, allowedUsers: users.map(Number) };
 }

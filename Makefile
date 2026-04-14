@@ -1,4 +1,4 @@
-.PHONY: lint typecheck check
+.PHONY: lint typecheck format format-check check
 
 lint:
 	bun run lint
@@ -6,4 +6,10 @@ lint:
 typecheck:
 	bun run typecheck
 
-check: lint typecheck
+format:
+	bun run format
+
+format-check:
+	bun run format:check
+
+check: lint typecheck format-check

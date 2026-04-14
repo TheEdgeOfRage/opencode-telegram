@@ -28,7 +28,7 @@ Add the plugin to your opencode config (`~/.config/opencode/config.json`):
 
 ```json
 {
-	"plugin": ["@theedgeofrage/opencode-telegram@latest"]
+  "plugin": ["@theedgeofrage/opencode-telegram@latest"]
 }
 ```
 
@@ -38,8 +38,8 @@ Create `~/.config/opencode/telegram.json`:
 
 ```json
 {
-	"token": "<telegram-bot-token>",
-	"allowedUsers": [123456789]
+  "token": "<telegram-bot-token>",
+  "allowedUsers": [123456789]
 }
 ```
 

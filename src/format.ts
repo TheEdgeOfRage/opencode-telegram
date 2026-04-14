@@ -58,11 +58,14 @@ function formatToolPart(part: Extract<Part, { type: "tool" }>): string {
 
   if (state.status === "completed" && state.output) {
     let output = state.output;
-    if (output.length > 3000) output = output.slice(0, 3000) + "\n... (truncated)";
+    if (output.length > 3000)
+      output = output.slice(0, 3000) + "\n... (truncated)";
     return "```\n" + escapeCodeContent(header + "\n" + output) + "\n```";
   }
   if (state.status === "error") {
-    return "```\n" + escapeCodeContent(header + "\nError: " + state.error) + "\n```";
+    return (
+      "```\n" + escapeCodeContent(header + "\nError: " + state.error) + "\n```"
+    );
   }
   return "```\n" + escapeCodeContent(header) + "\n```";
 }

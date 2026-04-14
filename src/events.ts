@@ -1,4 +1,9 @@
-import type { Event, EventMessageUpdated, EventMessagePartUpdated, Part } from "@opencode-ai/sdk";
+import type {
+  Event,
+  EventMessageUpdated,
+  EventMessagePartUpdated,
+  Part,
+} from "@opencode-ai/sdk";
 import * as log from "./log.js";
 
 // Server sends `permission.asked` with this shape, which diverges from the SDK's
@@ -30,7 +35,12 @@ export function registerSession(
   onPart: PartHandler,
   onPermission: PermissionHandler,
 ): void {
-  handlers.set(sessionId, { onPart, onPermission, parts: new Map(), assistantMessageIDs: new Set() });
+  handlers.set(sessionId, {
+    onPart,
+    onPermission,
+    parts: new Map(),
+    assistantMessageIDs: new Set(),
+  });
 }
 
 export function unregisterSession(sessionId: string): void {
@@ -61,7 +71,9 @@ export function handleEvent(event: Event): void {
 
   if (type === "permission.asked" || type === "permission.updated") {
     const perm = event.properties as unknown as PermissionEvent;
-    log.info(`[events] ${type} session=${perm.sessionID} perm=${perm.id} permission=${perm.permission}`);
+    log.info(
+      `[events] ${type} session=${perm.sessionID} perm=${perm.id} permission=${perm.permission}`,
+    );
     const handler = handlers.get(perm.sessionID);
     if (!handler) return;
     handler.onPermission(perm);
