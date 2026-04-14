@@ -379,9 +379,21 @@ export function createBot(token: string, allowedUsers: number[]): Bot {
       sendPrompt(sessionId, userText, activeAgent)
         .then(async (parts) => {
           cleanup();
-          // Send final text as separate new message(s)
+          // Final edit of the thinking message with full content (tools + text)
+          const fullContent = formatParts(parts);
+          if (fullContent) {
+            const editText =
+              fullContent.length > 4000
+                ? fullContent.slice(0, 4000) + escapeMarkdownV2("...")
+                : fullContent;
+            const editToSend =
+              channelChatId !== null ? formatAsQuote(editText) : editText;
+            await editMessage(ctx, responseMsgId, editToSend);
+          }
+          // Send final summary (text-only) as new message, but only if it
+          // differs from what's already in the edited message
           const textContent = formatTextParts(parts);
-          if (textContent) {
+          if (textContent && textContent !== fullContent) {
             const chunks = splitMessage(textContent);
             log.info(
               `[prompt] done session=${sessionId} chunks=${chunks.length}`,
