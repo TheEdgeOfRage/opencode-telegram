@@ -19,6 +19,6 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
       - run: bun install
-      - run: bun run build
+      - run: bun run typecheck
       - run: npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version
       - run: npm publish --access public

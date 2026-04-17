@@ -1,5 +1,3 @@
-import type { Part } from "@opencode-ai/sdk/client";
-
 const TELEGRAM_MAX = 4096;
 
 // eslint-disable-next-line no-useless-escape
@@ -13,7 +11,7 @@ export function escapeMarkdownV2(text: string): string {
  * Escape text for MarkdownV2 but preserve code blocks (``` delimited).
  * Inside code blocks only ` and \ need escaping.
  */
-function escapeWithCodeBlocks(text: string): string {
+export function escapeWithCodeBlocks(text: string): string {
   const parts: string[] = [];
   let cursor = 0;
 
@@ -44,58 +42,42 @@ function escapeCodeContent(text: string): string {
   return text.replace(/\\/g, "\\\\").replace(/`/g, "\\`");
 }
 
-function formatToolPart(part: Extract<Part, { type: "tool" }>): string {
-  const { state } = part;
-  const input = state.input;
+export function formatAsQuote(text: string): string {
+  const lines = text.split("\n");
+  return lines.map((line) => `> ${line}`).join("\n");
+}
+
+/** Format a tool execution as a MarkdownV2 code block */
+export function formatToolBlock(
+  toolName: string,
+  args: Record<string, unknown>,
+  status: string,
+  result?: string,
+  error?: string,
+): string {
   const target =
-    (input["path"] as string | undefined) ??
-    (input["filePath"] as string | undefined) ??
-    (input["file"] as string | undefined) ??
-    (input["command"] as string | undefined) ??
+    (args["path"] as string | undefined) ??
+    (args["filePath"] as string | undefined) ??
+    (args["file"] as string | undefined) ??
+    (args["command"] as string | undefined) ??
     "";
   const suffix = target ? ` (${target})` : "";
-  const header = "Tool: " + part.tool + suffix;
+  const header = "Tool: " + toolName + suffix;
 
-  if (state.status === "completed" && state.output) {
-    let output = state.output;
+  if (status === "completed" && result) {
+    let output = result;
     if (output.length > 3000)
       output = output.slice(0, 3000) + "\n... (truncated)";
     return "```\n" + escapeCodeContent(header + "\n" + output) + "\n```";
   }
-  if (state.status === "error") {
+  if (status === "error") {
     return (
-      "```\n" + escapeCodeContent(header + "\nError: " + state.error) + "\n```"
+      "```\n" +
+      escapeCodeContent(header + "\nError: " + (error || "unknown")) +
+      "\n```"
     );
   }
   return "```\n" + escapeCodeContent(header) + "\n```";
-}
-
-/** Format only text parts (no tool summaries) */
-export function formatTextParts(parts: Part[]): string {
-  const segments: string[] = [];
-  for (const part of parts) {
-    if (part.type === "text") segments.push(escapeWithCodeBlocks(part.text));
-  }
-  return segments.join("\n");
-}
-
-/** Extract formatted text from OpenCode Part[] response */
-export function formatParts(parts: Part[]): string {
-  const segments: string[] = [];
-
-  for (const part of parts) {
-    switch (part.type) {
-      case "text":
-        segments.push(escapeWithCodeBlocks(part.text));
-        break;
-      case "tool":
-        segments.push(formatToolPart(part));
-        break;
-      // Other part types (step-start, step-finish, etc.) are ignored
-    }
-  }
-
-  return segments.join("\n");
 }
 
 /**

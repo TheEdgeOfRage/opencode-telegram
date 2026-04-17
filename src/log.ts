@@ -2,7 +2,7 @@ import { createWriteStream, mkdirSync, type WriteStream } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
-const LOG_DIR = join(homedir(), ".local", "share", "opencode-telegram", "log");
+const LOG_DIR = join(homedir(), ".local", "share", "pi-telegram", "log");
 
 let stream: WriteStream;
 

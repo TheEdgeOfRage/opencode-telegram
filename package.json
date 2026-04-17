@@ -1,31 +1,41 @@
 {
-  "name": "@theedgeofrage/opencode-telegram",
+  "name": "@theedgeofrage/pi-telegram",
   "version": "0.1.0",
   "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/TheEdgeOfRage/opencode-telegram"
   },
-  "main": "dist/main.js",
-  "types": "dist/main.d.ts",
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "extensions": [
+      "./src/index.ts"
+    ]
+  },
   "files": [
-    "dist"
+    "src"
   ],
   "scripts": {
-    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "prepublishOnly": "bun run build"
+    "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@opencode-ai/plugin": "^1.4.0",
-    "@opencode-ai/sdk": "^1.4.0",
     "grammy": "^1.35.0"
+  },
+  "peerDependencies": {
+    "@mariozechner/pi-coding-agent": "*",
+    "@mariozechner/pi-ai": "*",
+    "@sinclair/typebox": "*"
   },
   "devDependencies": {
     "@eslint/js": "^9.23.0",
+    "@mariozechner/pi-coding-agent": "^0.67.6",
+    "@mariozechner/pi-ai": "^0.67.6",
+    "@sinclair/typebox": "^0.34.0",
     "@types/bun": "latest",
     "@types/node": "^22.13.14",
     "eslint": "^9.23.0",
